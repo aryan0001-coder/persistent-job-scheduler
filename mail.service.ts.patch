@@ -1,0 +1,26 @@
+await this.transporter.sendMail({
+      from: process.env.GMAIL_FROM || process.env.GMAIL_USER,
+      to,
+      subject,
+      text,
+      html,
+    });
+  }
+=======
+  private readonly logger = new (require('@nestjs/common').Logger)('MailService');
+
+  async sendMail(to: string, subject: string, text: string, html?: string) {
+    try {
+      await this.transporter.sendMail({
+        from: process.env.GMAIL_FROM || process.env.GMAIL_USER,
+        to,
+        subject,
+        text,
+        html,
+      });
+      this.logger.log(`Email sent to ${to} with subject "${subject}"`);
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${to}: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
