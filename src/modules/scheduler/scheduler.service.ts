@@ -13,14 +13,11 @@ export class SchedulerService {
   /**
    * SchedulerService constructor.
    * Injects the Job repository and starts polling for due jobs.
-   * Also processes overdue jobs on startup for crash resilience.
-   * @param jobRepository Repository<Job> injected repository for Job entity
    */
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
   ) {
-    // Start polling and process overdue jobs on startup for crash resilience
     void this.startPolling();
     void this.processOverdueJobs();
   }
@@ -45,7 +42,7 @@ export class SchedulerService {
 
   /**
    * Starts polling the database at a configurable interval to pick up due jobs.
-   * Emits 'job-due' event for each due job found.
+   *
    */
   private startPolling() {
     const POLL_INTERVAL = Number(process.env.POLL_INTERVAL_MS) || 10000; // Default 10s
@@ -100,8 +97,7 @@ export class SchedulerService {
   /**
    * No-op schedule method.
    * All jobs are picked up by polling for reliability and persistence.
-   * Logs the scheduling of a job.
-   * @param job Job to schedule
+   *
    */
   schedule(job: Job) {
     this.logger.log(`Job ${job.id} scheduled for ${String(job.scheduled_at)}`);

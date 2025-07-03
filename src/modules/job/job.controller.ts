@@ -24,8 +24,7 @@ export class JobController {
 
   /**
    * Creates a new job.
-   * @param createJobDto Data Transfer Object containing job creation data
-   * @returns Promise<Job> the created job
+   *
    */
   @Post()
   @ApiOperation({ summary: 'Create a new job' })
@@ -40,7 +39,7 @@ export class JobController {
 
   /**
    * Retrieves all jobs.
-   * @returns Promise<Job[]> list of all jobs
+   *
    */
   @Get()
   @ApiOperation({ summary: 'Retrieve all jobs' })
@@ -55,8 +54,7 @@ export class JobController {
 
   /**
    * Retrieves a job by its ID.
-   * @param id string job ID
-   * @returns Promise<Job> the found job
+   *
    */
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve a job by ID' })
@@ -71,9 +69,7 @@ export class JobController {
 
   /**
    * Updates a job by its ID.
-   * @param id string job ID
-   * @param updateJobDto Data Transfer Object containing update data
-   * @returns Promise<Job> the updated job
+   *
    */
   @Put(':id')
   @ApiOperation({ summary: 'Update a job by ID' })
@@ -91,7 +87,7 @@ export class JobController {
 
   /**
    * Deletes a job by its ID.
-   * @param id string job ID
+   *
    */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a job by ID' })

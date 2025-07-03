@@ -16,8 +16,6 @@ export class JobService {
    * Injects repositories and services, and registers job processing callback.
    * @param jobRepository Repository for Job entity
    * @param jobLogRepository Repository for JobLog entity
-   * @param mailService MailService for sending emails
-   * @param schedulerService SchedulerService for scheduling jobs
    */
   constructor(
     @InjectRepository(Job)
@@ -27,7 +25,6 @@ export class JobService {
     private readonly mailService: MailService,
     private readonly schedulerService: SchedulerService,
   ) {
-    // Register job processing callback for when jobs are due (picked up by polling)
     this.schedulerService.onJobDue((job) => {
       void this.processJob(job);
     });
@@ -36,8 +33,7 @@ export class JobService {
   /**
    * Creates and persists a new job.
    * No in-memory scheduling; polling will pick it up.
-   * @param createJobDto Data Transfer Object containing job creation data
-   * @returns Promise<Job> the saved job entity
+   *
    */
   async create(createJobDto: CreateJobDto): Promise<Job> {
     const job = this.jobRepository.create({
@@ -50,7 +46,6 @@ export class JobService {
       updated_at: new Date(),
     });
     const savedJob = await this.jobRepository.save(job);
-    // No need to schedule in-memory; polling will pick it up for persistence and crash recovery.
     return savedJob;
   }
 
@@ -64,9 +59,7 @@ export class JobService {
 
   /**
    * Finds a job by its ID.
-   * @param id string job ID
-   * @throws NotFoundException if job not found
-   * @returns Promise<Job> the found job
+
    */
   async findOne(id: string): Promise<Job> {
     const job = await this.jobRepository.findOneBy({ id });
@@ -78,9 +71,7 @@ export class JobService {
 
   /**
    * Updates a job by its ID.
-   * @param id string job ID
-   * @param updateJobDto Data Transfer Object containing update data
-   * @returns Promise<Job> the updated job
+   *
    */
   async update(id: string, updateJobDto: UpdateJobDto): Promise<Job> {
     await this.jobRepository.update(id, {
@@ -98,8 +89,7 @@ export class JobService {
 
   /**
    * Removes a job by its ID.
-   * @param id string job ID
-   * @throws NotFoundException if job not found
+   *
    */
   async remove(id: string): Promise<void> {
     const result = await this.jobRepository.delete(id);
@@ -110,9 +100,7 @@ export class JobService {
 
   /**
    * Logs a job event with status and message.
-   * @param jobId string job ID
-   * @param status string status of the log ('started', 'completed', 'failed')
-   * @param message string log message
+   *
    */
   async logJob(jobId: string, status: string, message: string) {
     const job = await this.findOne(jobId);
@@ -128,7 +116,7 @@ export class JobService {
   /**
    * Processes a job when it is due (called by polling mechanism).
    * Updates job status, logs events, sends notification emails, and reschedules if recurring.
-   * @param job Job entity to process
+   *
    */
   private async processJob(job: Job) {
     console.log('Processing job:', job.id, job.name);
@@ -137,7 +125,6 @@ export class JobService {
       await this.update(job.id, { status: 'completed' });
       await this.logJob(job.id, 'completed', 'Job executed successfully');
 
-      // Type-safe payload access
       let recipient: string = process.env.GMAIL_USER || '';
       if (
         job.payload &&
@@ -178,8 +165,7 @@ export class JobService {
 
   /**
    * Reschedules recurring jobs by creating a new job entry with updated scheduled_at.
-   * Supports 'daily' and 'weekly' recurrence patterns.
-   * @param job Job entity to reschedule
+   *
    */
   private async rescheduleJob(job: Job) {
     const nextScheduledAt = new Date(job.scheduled_at);
@@ -203,7 +189,6 @@ export class JobService {
       updated_at: new Date(),
     });
     await this.jobRepository.save(newJob);
-    // No need to schedule in-memory; polling will pick it up.
   }
 
   /**

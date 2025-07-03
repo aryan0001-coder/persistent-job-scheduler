@@ -22,11 +22,7 @@ export class MailService {
 
   /**
    * Sends an email using the configured transporter.
-   * @param to Recipient email address
-   * @param subject Subject of the email
-   * @param text Plain text content of the email
-   * @param html Optional HTML content of the email
-   * @throws Throws error if sending fails
+   *
    */
   async sendMail(
     to: string,
