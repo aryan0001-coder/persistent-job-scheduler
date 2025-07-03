@@ -14,7 +14,7 @@ import { JobModule } from './modules/job/job.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [Job, JobLog],
-      synchronize: true, // Set to false in production and use migrations!
+      synchronize: true,
     }),
     TypeOrmModule.forFeature([Job, JobLog]),
     JobModule,

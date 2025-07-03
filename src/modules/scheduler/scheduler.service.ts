@@ -80,7 +80,6 @@ export class SchedulerService {
         .setLock('pessimistic_write')
         .getMany();
 
-      // Mark fetched jobs as 'running' to prevent duplicate processing
       if (jobs.length > 0) {
         await manager
           .createQueryBuilder()
@@ -94,10 +93,6 @@ export class SchedulerService {
     });
   }
 
-  /**
-   * Registers a listener callback for the 'job-due' event.
-   * @param listener Callback function to invoke when a job is due
-   */
   onJobDue(listener: (job: Job) => void) {
     this.emitter.on('job-due', listener);
   }
