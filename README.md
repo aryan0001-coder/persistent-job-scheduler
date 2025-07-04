@@ -32,6 +32,7 @@ This scheduler ensures reliable, distributed, and persistent job execution, even
 7. **Distribted Execution**: Multiple worker Instance can run in parallel.
 8. **Graceful Shutdown**: On ShutDown the scheduler waits for any active job before exiting.
 9. **Cron Polling**: Uses cron based polling for checking jobs.
+    
 10.**Metadata & Dead-Lettering**: Failed Jobs are retried upto a maximum limit and then it is forward towards dead-lettered.
 11.**Monitoring & Alerting**: I have made a seperate folder and api end point '/metrics' which logs the dead-lettered.
 
