@@ -5,25 +5,55 @@
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+<p align="center">
+  A <a href="http://nodejs.org" target="_blank">Node.js</a> job scheduling application built with the <a href="http://nestjs.com" target="_blank">NestJS</a> framework for persistent and reliable task automation.
 </p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+<p align="center">
+  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+  <a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+  <a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+</p>
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Persistent Job Scheduler is a robust task scheduling application built with [NestJS](https://github.com/nestjs/nest) and TypeScript. It leverages PostgreSQL for persistent job storage, ensuring no jobs are lost during server crashes or restarts. The scheduler supports recurring jobs, crash recovery, email notifications, and global error handling for reliable task automation.
+
+## Features
+
+1. **Persistent Scheduling**: Jobs are stored in PostgreSQL, ensuring no jobs are lost on server crash or restart.
+2. **Crash Recovery**: On startup, the scheduler automatically picks up and processes any missed or overdue jobs.
+3. **Polling Mechanism**: Jobs are executed via a polling loop for reliability and persistence.
+4. **Recurring Jobs**: Supports daily and weekly recurring jobs.
+5. **Email Notifications**: Sends notification emails when jobs are executed.
+6. **Global Error Handling**: All errors are logged and returned in a consistent format.
+
+## API Overview
+
+- **Create Job**: `POST /api/job` - Creates a new job.
+- **Get All Jobs**: `GET /api/job` - Retrieves a list of all jobs.
+- **Get Job by ID**: `GET /api/job/:id` - Retrieves a specific jic job log by its ID.
+
+## What I Learnt From this Project ?
+
+-How to build a persistent job scheduler that keeps track of jobs in a database, so jobs aren’t lost if the server crashes or restarts.
+-How to implement crash recovery by polling the database for missed jobs and processing them after a restart.
+-How to send notification emails automatically when jobs are executed.
+-How to handle recurring jobs (like daily or weekly notifications).
+-How to write clean, maintainable code with proper comments, error handling, and linter fixes.ob by its ID.
+- **Delete Job**: `DELETE /api/job/:id` - Deletes a specific job by its ID.
+- **Get All Job Logs**: `GET /api/job-log` - Returns a list of all job logs.
+- **Get Logs for a Specific Job**: `GET /api/job-log/job/:jobId` - Retrieves logs for a specific job.
+- **Get Log by Log ID**: `GET /api/job-log/:id` - Retrieves a specific job log by its ID.
+
+## What I Learnt From this Project ?
+
+-How to build a persistent job scheduler that keeps track of jobs in a database, so jobs aren’t lost if the server crashes or restarts.
+-How to implement crash recovery by polling the database for missed jobs and processing them after a restart.
+-How to send notification emails automatically when jobs are executed.
+-How to handle recurring jobs (like daily or weekly notifications).
+-How to write clean, maintainable code with proper comments, error handling, and linter fixes.
 
 ## Project setup
 
