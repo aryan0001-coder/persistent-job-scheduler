@@ -18,7 +18,8 @@
 
 ## Description
 
-Persistent Job Scheduler is a robust task scheduling application built with [NestJS](https://github.com/nestjs/nest) and TypeScript. It leverages PostgreSQL for persistent job storage, ensuring no jobs are lost during server crashes or restarts. The scheduler supports recurring jobs, crash recovery, email notifications, and global error handling for reliable task automation.
+A robust, production-ready job scheduler built with NestJS, PostgreSQL, and Redis.
+This scheduler ensures reliable, distributed, and persistent job execution, even in the face of server crashes, restarts, or multiple worker instances.
 
 ## Features
 
@@ -28,32 +29,44 @@ Persistent Job Scheduler is a robust task scheduling application built with [Nes
 4. **Recurring Jobs**: Supports daily and weekly recurring jobs.
 5. **Email Notifications**: Sends notification emails when jobs are executed.
 6. **Global Error Handling**: All errors are logged and returned in a consistent format.
+7. **Distribted Execution**: Multiple worker Instance can run in parallel.
+8. **Graceful Shutdown**: On ShutDown the scheduler waits for any active job before exiting.
+9. **Cron Polling**: Uses cron based polling for checking jobs.
+10.**Metadata & Dead-Lettering**: Failed Jobs are retried upto a maximum limit and then it is forward towards dead-lettered.
+11.**Monitoring & Alerting**: I have made a seperate folder and api end point '/metrics' which logs the dead-lettered.
+
 
 ## API Overview
 
-- **Create Job**: `POST /api/job` - Creates a new job.
-- **Get All Jobs**: `GET /api/job` - Retrieves a list of all jobs.
-- **Get Job by ID**: `GET /api/job/:id` - Retrieves a specific jic job log by its ID.
+- **Create Job**: `POST /api/job`
+- **Get All Jobs**: `GET /api/job`
+- **Get Job by ID**: `GET /api/job/:id`
+- **Delete Job**: `DELETE /api/job/:id`
+- **Get All Logs**: `GET /api/job-log`
+- **Get Logs for a Job**: `GET /api/job-log/job/:jobId`
+- **Get Log by Log ID**: `GET /api/job-log/:id`
+- **Metrics**: `GET /metrics`
+- **Swagger Docs**: `GET /api/docs`
 
 ## What I Learnt From this Project ?
 
--How to build a persistent job scheduler that keeps track of jobs in a database, so jobs aren’t lost if the server crashes or restarts.
--How to implement crash recovery by polling the database for missed jobs and processing them after a restart.
--How to send notification emails automatically when jobs are executed.
--How to handle recurring jobs (like daily or weekly notifications).
--How to write clean, maintainable code with proper comments, error handling, and linter fixes.ob by its ID.
-- **Delete Job**: `DELETE /api/job/:id` - Deletes a specific job by its ID.
-- **Get All Job Logs**: `GET /api/job-log` - Returns a list of all job logs.
-- **Get Logs for a Specific Job**: `GET /api/job-log/job/:jobId` - Retrieves logs for a specific job.
-- **Get Log by Log ID**: `GET /api/job-log/:id` - Retrieves a specific job log by its ID.
+-How to build a robust, persistent, and distributed job scheduler using NestJS, PostgreSQL, and Redis.
 
-## What I Learnt From this Project ?
+-The importance of distributed locking to prevent duplicate job execution in multi-worker environments.
 
--How to build a persistent job scheduler that keeps track of jobs in a database, so jobs aren’t lost if the server crashes or restarts.
--How to implement crash recovery by polling the database for missed jobs and processing them after a restart.
--How to send notification emails automatically when jobs are executed.
--How to handle recurring jobs (like daily or weekly notifications).
--How to write clean, maintainable code with proper comments, error handling, and linter fixes.
+-How to implement retry logic and dead-lettering for failed jobs.
+
+-How to expose metrics for monitoring and integrate with Prometheus.
+
+-How to implement graceful shutdown to ensure no jobs are lost or left incomplete.
+
+-How to handle real-world backend challenges like error handling, crash recovery, and flexible scheduling.
+
+-How to write clean, maintainable, and production-ready code.
+
+	
+
+git push -f -u origin main
 
 ## Project setup
 
