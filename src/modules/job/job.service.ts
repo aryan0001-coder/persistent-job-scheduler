@@ -8,6 +8,7 @@ import { UpdateJobDto } from './dtos/update-jobs.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '../mail/mail.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { MetricsService } from '../../common/metrics.service';
 
 @Injectable()
 export class JobService {
@@ -24,6 +25,7 @@ export class JobService {
     private readonly jobLogRepository: Repository<JobLog>,
     private readonly mailService: MailService,
     private readonly schedulerService: SchedulerService,
+    private readonly metricsService: MetricsService,
   ) {
     this.schedulerService.onJobDue((job) => {
       void this.processJob(job);
@@ -122,7 +124,13 @@ export class JobService {
     console.log('Processing job:', job.id, job.name);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await this.update(job.id, { status: 'completed' });
+      await this.update(job.id, {
+        status: 'completed',
+        last_executed_at: new Date().toISOString(),
+        retry_count: 0,
+        dead_lettered: false,
+      });
+      this.metricsService.jobsProcessed.inc();
       await this.logJob(job.id, 'completed', 'Job executed successfully');
 
       let recipient: string = process.env.GMAIL_USER || '';
@@ -154,12 +162,40 @@ export class JobService {
         await this.rescheduleJob(job);
       }
     } catch (error) {
-      await this.update(job.id, { status: 'failed' });
-      await this.logJob(
-        job.id,
-        'failed',
-        `Job failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      // Retry and dead-letter logic
+      const retryCount = (job.retry_count ?? 0) + 1;
+      if (retryCount < (job.max_retries ?? 3)) {
+        // Retry: set status back to pending, increment retry_count
+        await this.update(job.id, {
+          status: 'pending',
+          retry_count: retryCount,
+          last_executed_at: new Date().toISOString(),
+        });
+        this.metricsService.jobsFailed.inc();
+        await this.logJob(
+          job.id,
+          'failed',
+          `Job failed (retry ${retryCount}): ${error instanceof Error ? error.message : String(error)}`,
+        );
+      } else {
+        // Dead-letter: mark as failed and dead_lettered
+        await this.update(job.id, {
+          status: 'failed',
+          retry_count: retryCount,
+          dead_lettered: true,
+          last_executed_at: new Date().toISOString(),
+        });
+        this.metricsService.jobsFailed.inc();
+        this.metricsService.jobsDeadLettered.inc();
+        console.warn(
+          `Job ${job.id} has been dead-lettered after ${retryCount} attempts.`,
+        );
+        await this.logJob(
+          job.id,
+          'failed',
+          `Job dead-lettered after ${retryCount} attempts: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
   }
 

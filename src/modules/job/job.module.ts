@@ -8,12 +8,14 @@ import { Job } from '../database/entities/job.entity';
 import { JobLog } from '../database/entities/job-log.entity';
 import { JobLogController } from './job-log.controller';
 import { MailModule } from '../mail/mail.module';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
   imports: [
     DatabaseModule,
     TypeOrmModule.forFeature([Job, JobLog]),
     MailModule,
+    CommonModule,
   ],
   controllers: [JobController, JobLogController],
   providers: [JobService, SchedulerService],

@@ -30,6 +30,21 @@ export class Job {
   @Column({ length: 50 })
   recurrence: string;
 
+  @Column({ type: 'jsonb', nullable: true })
+  metadata?: any;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_executed_at?: Date;
+
+  @Column({ type: 'int', default: 0 })
+  retry_count: number;
+
+  @Column({ type: 'int', default: 3 })
+  max_retries: number;
+
+  @Column({ type: 'boolean', default: false })
+  dead_lettered: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

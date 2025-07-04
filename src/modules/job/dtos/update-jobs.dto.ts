@@ -25,4 +25,18 @@ export class UpdateJobDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  last_executed_at?: string;
+
+  @IsOptional()
+  retry_count?: number;
+
+  @IsOptional()
+  max_retries?: number;
+
+  @IsOptional()
+  dead_lettered?: boolean;
 }

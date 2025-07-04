@@ -3,12 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from '../database/entities/job.entity';
 import { EventEmitter } from 'events';
+import * as cron from 'node-cron';
+import Redis from 'ioredis';
 
 @Injectable()
 export class SchedulerService {
   private readonly logger = new Logger(SchedulerService.name);
   private readonly emitter = new EventEmitter();
-  private pollingInterval: NodeJS.Timeout;
+  private pollingTask: cron.ScheduledTask;
+  private redis: Redis;
+  private isShuttingDown = false;
+  private activeJobs = 0;
 
   /**
    * SchedulerService constructor.
@@ -18,6 +23,9 @@ export class SchedulerService {
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
   ) {
+    // Connect to Redis (default: localhost:6379)
+    this.redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+    // Start polling and process overdue jobs on startup for crash resilience
     void this.startPolling();
     void this.processOverdueJobs();
   }
@@ -31,7 +39,7 @@ export class SchedulerService {
     try {
       const overdueJobs = await this.fetchDueJobs();
       for (const job of overdueJobs) {
-        this.emitter.emit('job-due', job);
+        await this.emitWithLock(job);
       }
     } catch (error: unknown) {
       this.logger.error(
@@ -42,24 +50,23 @@ export class SchedulerService {
 
   /**
    * Starts polling the database at a configurable interval to pick up due jobs.
-   *
+   * Emits 'job-due' event for each due job found.
    */
   private startPolling() {
-    const POLL_INTERVAL = Number(process.env.POLL_INTERVAL_MS) || 10000; // Default 10s
-    this.pollingInterval = setInterval(() => {
-      void (async () => {
-        try {
-          const jobs = await this.fetchDueJobs();
-          for (const job of jobs) {
-            this.emitter.emit('job-due', job);
-          }
-        } catch (error: unknown) {
-          this.logger.error(
-            `Polling error: ${error instanceof Error ? error.message : String(error)}`,
-          );
+    const POLL_CRON = process.env.POLL_CRON || '*/1 * * * *';
+    this.pollingTask = cron.schedule(POLL_CRON, async () => {
+      try {
+        const jobs = await this.fetchDueJobs();
+        for (const job of jobs) {
+          await this.emitWithLock(job);
         }
-      })();
-    }, POLL_INTERVAL);
+      } catch (error: unknown) {
+        this.logger.error(
+          `Polling error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    });
+    this.pollingTask.start();
   }
 
   /**
@@ -90,6 +97,31 @@ export class SchedulerService {
     });
   }
 
+  // Distributed lock before emitting job-due
+  private async emitWithLock(job: Job) {
+    const lockKey = `job-lock:${job.id}`;
+    const lockValue = `${process.pid}-${Date.now()}`;
+    // Try to acquire lock for 30 seconds
+    const acquired = await this.redis.set(lockKey, lockValue, 'EX', 30, 'NX');
+    if (acquired) {
+      this.activeJobs++;
+      try {
+        void this.emitter.emit('job-due', job);
+      } finally {
+        // Release lock (only if still owned)
+        const currentValue = await this.redis.get(lockKey);
+        if (currentValue === lockValue) {
+          await this.redis.del(lockKey);
+        }
+        this.activeJobs--;
+      }
+    } else {
+      this.logger.warn(
+        `Job ${job.id} is already being processed by another worker.`,
+      );
+    }
+  }
+
   onJobDue(listener: (job: Job) => void) {
     this.emitter.on('job-due', listener);
   }
@@ -107,8 +139,23 @@ export class SchedulerService {
    * Stops the polling interval if it is running.
    */
   stopPolling() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
+    if (this.pollingTask) {
+      this.pollingTask.stop();
     }
+  }
+
+  async shutdown() {
+    this.isShuttingDown = true;
+    if (this.pollingTask) {
+      this.pollingTask.stop();
+    }
+    // Wait for active jobs to finish
+    while (this.activeJobs > 0) {
+      this.logger.log(
+        `Waiting for ${this.activeJobs} active jobs to finish...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    this.logger.log('All jobs finished. Shutting down.');
   }
 }
