@@ -62,12 +62,6 @@ This scheduler ensures reliable, distributed, and persistent job execution, even
 
 -How to handle real-world backend challenges like error handling, crash recovery, and flexible scheduling.
 
--How to write clean, maintainable, and production-ready code.
-
-	
-
-git push -f -u origin main
-
 ## Project setup
 
 ```bash
